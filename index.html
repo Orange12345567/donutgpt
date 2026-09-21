@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#050806" />
+  <title>NEON VAULT — Arcade Demo</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <canvas id="bg"></canvas>
+  <header class="topbar glass">
+    <button class="brand" data-go="home"><span class="brand-mark">N</span><span>NEON VAULT</span></button>
+    <div class="top-stats">
+      <div class="credit-pill"><span class="dot"></span><span id="credits">10.00M</span> CREDITS</div>
+      <button id="soundBtn" class="icon-btn" title="Toggle sound">🔊</button>
+      <button id="devBtn" class="neon-btn small">DEV</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="view active">
+      <div class="hero">
+        <div>
+          <p class="eyebrow">ARCADE DEMO • FICTIONAL CREDITS ONLY</p>
+          <h1>Three games.<br><span>One neon vault.</span></h1>
+          <p class="hero-copy">A polished dark arcade prototype with animated 3D-style cards, responsive controls, shorthand bets, generated sound effects, and persistent demo credits.</p>
+        </div>
+        <div class="hero-orb">
+          <div class="orb-core"></div><div class="orb-ring r1"></div><div class="orb-ring r2"></div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <div><p class="eyebrow">LIVE FLOOR</p><h2>Choose a game</h2></div>
+        <span class="muted">More games can be added later</span>
+      </div>
+
+      <div class="game-grid">
+        <button class="game-card roulette-card" data-go="roulette">
+          <div class="cover-scene roulette-cover">
+            <div class="mini-wheel"><div class="mini-ball"></div><div class="mini-wheel-center"></div></div>
+          </div>
+          <div class="game-meta"><div><small>CLASSIC TABLE</small><h3>Roulette</h3></div><span class="launch">PLAY ↗</span></div>
+        </button>
+
+        <button class="game-card blackjack-card" data-go="blackjack">
+          <div class="cover-scene blackjack-cover">
+            <div class="cover-card c1">A<span>♠</span></div>
+            <div class="cover-card c2">K<span>♠</span></div>
+            <div class="cover-chip">21</div>
+          </div>
+          <div class="game-meta"><div><small>TABLE GAME</small><h3>Blackjack</h3></div><span class="launch">PLAY ↗</span></div>
+        </button>
+
+        <button class="game-card slots-card" data-go="slots">
+          <div class="cover-scene slots-cover">
+            <div class="slot-cover-reel"><span>7</span><span>◆</span><span>★</span></div>
+            <div class="slot-cover-reel delay"><span>★</span><span>7</span><span>◆</span></div>
+            <div class="slot-cover-reel delay2"><span>◆</span><span>★</span><span>7</span></div>
+          </div>
+          <div class="game-meta"><div><small>NEON MACHINE</small><h3>Pulse Slots</h3></div><span class="launch">PLAY ↗</span></div>
+        </button>
+      </div>
+    </section>
+
+    <section id="roulette" class="view game-view">
+      <div class="game-header">
+        <button class="back-btn" data-go="home">← FLOOR</button>
+        <div><p class="eyebrow">CLASSIC TABLE</p><h2>Neon Roulette</h2></div>
+        <div class="bet-display">BET <b id="rouletteBetTotal">0</b></div>
+      </div>
+
+      <div class="roulette-layout">
+        <div class="wheel-panel glass">
+          <div class="wheel-stage">
+            <div id="rouletteWheel" class="roulette-wheel">
+              <div id="wheelNumbers" class="wheel-numbers"></div>
+              <div class="wheel-rim"></div>
+              <div id="rouletteBall" class="roulette-ball"></div>
+              <div class="wheel-hub"><span>N</span></div>
+            </div>
+            <div class="wheel-pointer"></div>
+          </div>
+          <div id="rouletteResult" class="result-banner">PLACE YOUR BETS</div>
+          <button id="spinRoulette" class="primary-btn wide">SPIN WHEEL</button>
+        </div>
+
+        <div class="roulette-bets glass">
+          <div class="bet-controls">
+            <label>BET AMOUNT
+              <input id="rouletteAmount" value="100K" inputmode="text" />
+            </label>
+            <div class="quick-bets">
+              <button data-rquick="10000">10K</button><button data-rquick="100000">100K</button><button data-rquick="1000000">1M</button><button data-rquick="5000000">5M</button>
+            </div>
+          </div>
+          <div class="roulette-table" id="rouletteTable"></div>
+          <div class="outside-bets">
+            <button data-rbet="red" class="red-bet">RED <small>2×</small></button>
+            <button data-rbet="black" class="black-bet">BLACK <small>2×</small></button>
+            <button data-rbet="even">EVEN <small>2×</small></button>
+            <button data-rbet="odd">ODD <small>2×</small></button>
+            <button data-rbet="low">1–18 <small>2×</small></button>
+            <button data-rbet="high">19–36 <small>2×</small></button>
+          </div>
+          <div class="selected-bet" id="rouletteSelected">No bet selected</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="blackjack" class="view game-view">
+      <div class="game-header">
+        <button class="back-btn" data-go="home">← FLOOR</button>
+        <div><p class="eyebrow">TABLE GAME</p><h2>Blackjack 21</h2></div>
+        <div class="bet-display">BET <b id="bjBetDisplay">100K</b></div>
+      </div>
+      <div class="bj-table-wrap">
+        <div class="bj-table">
+          <div class="table-glow"></div>
+          <div class="bj-zone dealer-zone">
+            <div class="zone-label">DEALER <span id="dealerScore"></span></div>
+            <div id="dealerHand" class="hand"></div>
+          </div>
+          <div id="bjStatus" class="bj-status">Set your bet and deal.</div>
+          <div class="bj-zone player-zone">
+            <div class="zone-label">YOU <span id="playerScore"></span></div>
+            <div id="playerHands" class="player-hands"></div>
+          </div>
+        </div>
+        <div class="bj-console glass">
+          <div class="bet-controls compact">
+            <label>BET<input id="bjAmount" value="100K" /></label>
+            <div class="quick-bets">
+              <button data-bjquick="10000">10K</button><button data-bjquick="100000">100K</button><button data-bjquick="1000000">1M</button>
+            </div>
+          </div>
+          <div class="bj-actions">
+            <button id="bjDeal" class="primary-btn">DEAL</button>
+            <button id="bjHit">HIT</button>
+            <button id="bjStand">STAND</button>
+            <button id="bjDouble">DOUBLE</button>
+            <button id="bjSplit">SPLIT</button>
+          </div>
+          <div class="rule-strip"><span>BLACKJACK 3:2</span><span>DEALER STANDS 17</span><span>DOUBLE AFTER DEAL</span><span>SPLIT PAIRS</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="slots" class="view game-view">
+      <div class="game-header">
+        <button class="back-btn" data-go="home">← FLOOR</button>
+        <div><p class="eyebrow">NEON MACHINE</p><h2>Pulse Slots</h2></div>
+        <div class="bet-display">BET <b id="slotBetDisplay">100K</b></div>
+      </div>
+
+      <div class="slots-layout">
+        <div class="slot-machine">
+          <div class="slot-topper">PULSE <span>×</span> JACKPOT</div>
+          <div class="reel-window">
+            <div id="reel1" class="reel"></div>
+            <div id="reel2" class="reel"></div>
+            <div id="reel3" class="reel"></div>
+            <div class="pay-line"></div>
+          </div>
+          <div id="slotStatus" class="slot-status">READY</div>
+          <div class="slot-controls">
+            <div class="bet-controls compact">
+              <label>BET<input id="slotAmount" value="100K" /></label>
+              <div class="quick-bets">
+                <button data-squick="10000">10K</button><button data-squick="100000">100K</button><button data-squick="1000000">1M</button>
+              </div>
+            </div>
+            <button id="slotSpin" class="spin-btn">SPIN</button>
+          </div>
+        </div>
+
+        <aside class="bonus-panel glass">
+          <p class="eyebrow">BONUS LAB</p><h3>Bonuses & Handpays</h3>
+          <div class="paytable" id="paytable">
+            <div><span>7 7 7</span><b>25×</b></div>
+            <div><span>★ ★ ★</span><b>12×</b></div>
+            <div><span>◆ ◆ ◆</span><b>8×</b></div>
+            <div><span>🍒 🍒 🍒</span><b>5×</b></div>
+            <div><span>ANY PAIR</span><b>1.5×</b></div>
+            <div class="handpay-row"><span>HANDPAY</span><b>≥ 10M</b></div>
+          </div>
+          <div class="bonus-list">
+            <button id="forcePinball">TEST PINBALL BONUS</button>
+            <button id="forceMega">TEST MEGA MULTI</button>
+            <button id="forceHandpay">TEST HANDPAY</button>
+          </div>
+          <div class="bonus-info">
+            <b>PINBALL BONUS</b>
+            <p>Launches a neon ball through multiplier bumpers. Final multiplier is applied to your current bet.</p>
+          </div>
+        </aside>
+      </div>
+
+      <div id="pinballModal" class="modal hidden">
+        <div class="modal-card pinball-card">
+          <button class="modal-x" data-close="pinballModal">×</button>
+          <p class="eyebrow">BONUS ROUND</p>
+          <h2>PINBALL MULTIPLIER</h2>
+          <div id="pinballBoard" class="pinball-board">
+            <div class="bumper b1">2×</div><div class="bumper b2">3×</div><div class="bumper b3">5×</div>
+            <div class="bumper b4">10×</div><div class="bumper b5">25×</div>
+            <div id="pinballBall" class="pinball-ball"></div>
+            <div class="pin-slot s1">2×</div><div class="pin-slot s2">5×</div><div class="pin-slot s3">10×</div><div class="pin-slot s4">25×</div>
+          </div>
+          <div id="pinballResult" class="bonus-result">LAUNCHING...</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="devModal" class="modal hidden">
+    <div class="modal-card dev-card">
+      <button class="modal-x" data-close="devModal">×</button>
+      <p class="eyebrow">DEMO TOOLS</p><h2>Developer Menu</h2>
+      <p class="muted">Local demo credits only. Stored in this browser.</p>
+      <div class="dev-grid">
+        <button data-addcredits="1000000">+1M</button>
+        <button data-addcredits="10000000">+10M</button>
+        <button data-addcredits="100000000">+100M</button>
+        <button id="resetCredits">RESET TO 10M</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <footer>NEON VAULT • DEMO ARCADE • NO REAL MONEY OR CASH VALUE</footer>
+  <script src="./app.js"></script>
+</body>
+</html>
