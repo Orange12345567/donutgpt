@@ -1,145 +1,36 @@
+let credits=10000000,sound=true,currentGame=null,bet=100000;
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-let credits=Number(localStorage.getItem('neonCredits')||10000000),soundOn=localStorage.getItem('neonSound')!=='off',audioCtx;
-const fmt=n=>{const a=Math.abs(n);if(a>=1e9)return (n/1e9).toFixed(a>=1e10?0:2).replace(/\.?(0+)$/,'')+'B';if(a>=1e6)return (n/1e6).toFixed(a>=1e7?0:2).replace(/\.?(0+)$/,'')+'M';if(a>=1e3)return (n/1e3).toFixed(a>=1e4?0:1).replace(/\.?(0+)$/,'')+'K';return Math.round(n).toLocaleString()};
-const parseAmount=v=>{const s=String(v).trim().toUpperCase().replace(/[$,\s]/g,'');const m=s.match(/^(\d*\.?\d+)([KMB])?$/);if(!m)return NaN;return Math.floor(Number(m[1])*({K:1e3,M:1e6,B:1e9}[m[2]]||1))};
-function setCredits(n){credits=Math.max(0,Math.floor(n));localStorage.setItem('neonCredits',credits);$('#credits').textContent=fmt(credits)}
-function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),2200)}
-function beep(freq=440,d=.08,type='sine',gain=.04){if(!soundOn)return;audioCtx??=new(window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.value=gain;o.connect(g);g.connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+d);o.stop(audioCtx.currentTime+d)}
-function winSound(){[523,659,784,1047,1318].forEach((f,i)=>setTimeout(()=>beep(f,.13,'triangle',.055),i*75))}function loseSound(){beep(180,.2,'sawtooth',.035);setTimeout(()=>beep(120,.22,'sawtooth',.03),120)}
-setCredits(credits);$('#soundBtn').textContent=soundOn?'🔊':'🔇';$('#soundBtn').onclick=()=>{soundOn=!soundOn;localStorage.setItem('neonSound',soundOn?'on':'off');$('#soundBtn').textContent=soundOn?'🔊':'🔇';beep(660)};
-$$('[data-go]').forEach(b=>b.onclick=()=>{const id=b.dataset.go;$$('.view').forEach(v=>v.classList.remove('active'));$('#'+id).classList.add('active');scrollTo({top:0,behavior:'smooth'});beep(420,.05,'triangle')});
-$('#devBtn').onclick=()=>$('#devModal').classList.remove('hidden');$$('[data-close]').forEach(b=>b.onclick=()=>$('#'+b.dataset.close).classList.add('hidden'));$$('[data-addcredits]').forEach(b=>b.onclick=()=>{const n=Number(b.dataset.addcredits);setCredits(credits+n);toast('Added '+fmt(n)+' chips');beep(900)});$('#resetCredits').onclick=()=>{setCredits(10000000);toast('Reset to 10M chips')};
-const canvas=$('#bg'),ctx=canvas.getContext('2d');let pts=[];function resize(){canvas.width=innerWidth*devicePixelRatio;canvas.height=innerHeight*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);pts=Array.from({length:38},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.2+.2,s:Math.random()*.18+.04}))}function drawBg(){ctx.clearRect(0,0,innerWidth,innerHeight);ctx.fillStyle='#58ff7855';pts.forEach(p=>{p.y-=p.s;if(p.y<0)p.y=innerHeight;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill()});requestAnimationFrame(drawBg)}resize();addEventListener('resize',resize);drawBg();
-
-/* ROULETTE — the wheel, pocket labels and result all use the same wheelOrder. */
-const wheelOrder=[0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
-const redNums=new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);let rBet=null,rSpinning=false,rRotation=0;
-const wheelNumbers=$('#wheelNumbers');wheelOrder.forEach((n,i)=>{const s=document.createElement('span');const a=i*360/wheelOrder.length;s.textContent=n;s.dataset.n=n;s.style.setProperty('--a',`${a}deg`);s.style.color=n===0?'#71ff8b':redNums.has(n)?'#ff7183':'#f2f6f3';wheelNumbers.appendChild(s)});
-for(let n=0;n<=36;n++){const b=document.createElement('button');b.textContent=n;b.dataset.rbet=n;b.className=n===0?'zero':redNums.has(n)?'red':'black';$('#rouletteTable').appendChild(b)}
-function selectRBet(v,el){rBet=String(v);$$('[data-rbet]').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');$('#rouletteSelected').innerHTML=`<b>${/^\d+$/.test(rBet)?'NUMBER '+rBet:rBet.toUpperCase()}</b> selected`;beep(520,.05,'triangle')}
-$('#rouletteTable').onclick=e=>{const b=e.target.closest('[data-rbet]');if(b)selectRBet(b.dataset.rbet,b)};$$('.outside-bets [data-rbet]').forEach(b=>b.onclick=()=>selectRBet(b.dataset.rbet,b));$$('[data-rquick]').forEach(b=>b.onclick=()=>{$('#rouletteAmount').value=fmt(Number(b.dataset.rquick));$('#rouletteAmount').dispatchEvent(new Event('input'))});
-$('#rouletteAmount').oninput=()=>{const n=parseAmount($('#rouletteAmount').value);$('#rouletteBetTotal').textContent=Number.isFinite(n)?fmt(n):'—'};$('#rouletteAmount').dispatchEvent(new Event('input'));
-function rouletteWin(bet,num){if(/^\d+$/.test(bet))return Number(bet)===num?36:0;if(num===0)return 0;if(bet==='red')return redNums.has(num)?2:0;if(bet==='black')return !redNums.has(num)?2:0;if(bet==='even')return num%2===0?2:0;if(bet==='odd')return num%2?2:0;if(bet==='low')return num<=18?2:0;if(bet==='high')return num>=19?2:0;return 0}
-function spinRoulette(){if(rSpinning)return;if(rBet===null)return toast('Choose a number or color first.');const amt=parseAmount($('#rouletteAmount').value);if(!amt||amt<1)return toast('Enter a chip amount like 100K or 1M.');if(amt>credits)return toast('Not enough chips.');rSpinning=true;setCredits(credits-amt);$('#spinRoulette').disabled=true;$('#rouletteResult').textContent='SPINNING…';const result=wheelOrder[Math.floor(Math.random()*wheelOrder.length)],idx=wheelOrder.indexOf(result),sector=360/wheelOrder.length;const target=((idx*sector)+sector/2);const turns=5;const newRotation=rRotation+turns*360+(360-target-(rRotation%360)+360)%360;rRotation=newRotation;$('#rouletteWheel').style.transition='transform 4.5s cubic-bezier(.12,.78,.09,1)';$('#rouletteWheel').style.transform=`rotate(${newRotation}deg)`;let ticks=0;const timer=setInterval(()=>{beep(250+(ticks%7)*24,.024,'square',.01);ticks++},95);setTimeout(()=>{clearInterval(timer);const mult=rouletteWin(rBet,result),color=result===0?'GREEN':redNums.has(result)?'RED':'BLACK',payout=amt*mult;setCredits(credits+payout);$('#rouletteResult').textContent=payout?`${result} • ${color} • WON ${fmt(payout)}`:`${result} • ${color} • NO WIN`;payout?winSound():loseSound();$('#spinRoulette').disabled=false;rSpinning=false},4550)}
-$('#spinRoulette').onclick=spinRoulette;
-
-/* BLACKJACK */
-const suits=['♠','♥','♦','♣'],ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];let deck=[],dealer=[],hands=[],activeHand=0,bjRunning=false,dealerHidden=true;
-function newDeck(){deck=[];for(const s of suits)for(const r of ranks)deck.push({r,s});for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}}
-function val(hand){let v=0,a=0;hand.forEach(c=>{if(c.r==='A'){v+=11;a++}else v+=['J','Q','K'].includes(c.r)?10:Number(c.r)});while(v>21&&a){v-=10;a--}return v}
-function cardEl(c,back=false){const d=document.createElement('div');d.className='playing-card'+(back?' back':(['♥','♦'].includes(c.s)?' red-suit':''));if(!back)d.innerHTML=`${c.r}<span class="suit">${c.s}</span>`;return d}
-function renderBJ(){const dh=$('#dealerHand');dh.innerHTML='';dealer.forEach((c,i)=>dh.appendChild(cardEl(c,dealerHidden&&i===1)));$('#dealerScore').textContent=dealer.length?(dealerHidden?val([dealer[0]]):val(dealer)):'';const ph=$('#playerHands');ph.innerHTML='';hands.forEach((h,i)=>{const w=document.createElement('div');w.className='split-hand '+(i===activeHand&&bjRunning?'active-hand':'');h.cards.forEach(c=>w.appendChild(cardEl(c)));ph.appendChild(w)});$('#playerScore').textContent=hands.length===1?val(hands[0]?.cards||[]):hands.map(h=>val(h.cards)).join(' / ');const h=hands[activeHand];$('#bjHit').disabled=!bjRunning||!h;$('#bjStand').disabled=!bjRunning||!h;$('#bjDouble').disabled=!bjRunning||!h||h.cards.length!==2||credits<h.bet;$('#bjSplit').disabled=!bjRunning||!h||h.cards.length!==2||h.cards[0].r!==h.cards[1].r||credits<h.bet||hands.length>=4;$('#bjDeal').disabled=bjRunning;$('#bjChipVisual').textContent=$('#bjAmount').value||'—'}
-function bjNextOrDealer(){if(activeHand<hands.length-1){activeHand++;renderBJ();$('#bjStatus').textContent='Playing hand '+(activeHand+1);return}dealerTurn()}
-function finishBJ(){dealerHidden=false;const dv=val(dealer);let totalReturn=0,msg=[];hands.forEach(h=>{const pv=val(h.cards),nat=h.cards.length===2&&pv===21&&!h.fromSplit,dnat=dealer.length===2&&dv===21;let ret=0;if(pv>21)msg.push('BUST');else if(dv>21||pv>dv){ret=h.bet*(nat&&!dnat?2.5:2);msg.push('WIN '+fmt(ret))}else if(pv===dv){ret=h.bet;msg.push('PUSH')}else msg.push('DEALER WINS');totalReturn+=ret});if(totalReturn)setCredits(credits+totalReturn);$('#bjStatus').textContent=msg.join(' • ');totalReturn>hands.reduce((s,h)=>s+h.bet,0)?winSound():loseSound();bjRunning=false;renderBJ()}
-function dealerTurn(){dealerHidden=false;renderBJ();$('#bjStatus').textContent='Dealer playing…';const iv=setInterval(()=>{if(val(dealer)<17){dealer.push(deck.pop());beep(380,.06,'triangle');renderBJ()}else{clearInterval(iv);setTimeout(finishBJ,350)}},500)}
-$$('[data-bjquick]').forEach(b=>b.onclick=()=>{$('#bjAmount').value=fmt(Number(b.dataset.bjquick));$('#bjAmount').dispatchEvent(new Event('input'))});$('#bjAmount').oninput=()=>{$('#bjBetDisplay').textContent=$('#bjAmount').value||'—';$('#bjChipVisual').textContent=$('#bjAmount').value||'—'};
-$('#bjDeal').onclick=()=>{const amt=parseAmount($('#bjAmount').value);if(!amt||amt<1)return toast('Enter a valid chip bet.');if(amt>credits)return toast('Not enough chips.');setCredits(credits-amt);newDeck();dealer=[deck.pop(),deck.pop()];hands=[{cards:[deck.pop(),deck.pop()],bet:amt,fromSplit:false}];activeHand=0;dealerHidden=true;bjRunning=true;$('#bjStatus').textContent='Your move.';renderBJ();beep(520);if(val(hands[0].cards)===21)setTimeout(dealerTurn,650)};
-$('#bjHit').onclick=()=>{const h=hands[activeHand];h.cards.push(deck.pop());beep(500,.05,'triangle');renderBJ();if(val(h.cards)>=21)setTimeout(bjNextOrDealer,350)};$('#bjStand').onclick=bjNextOrDealer;$('#bjDouble').onclick=()=>{const h=hands[activeHand];if(!h||credits<h.bet)return;setCredits(credits-h.bet);h.bet*=2;h.cards.push(deck.pop());beep(700);renderBJ();setTimeout(bjNextOrDealer,400)};$('#bjSplit').onclick=()=>{const h=hands[activeHand];if(!h||credits<h.bet)return;setCredits(credits-h.bet);const c2=h.cards.pop();h.fromSplit=true;h.cards.push(deck.pop());hands.splice(activeHand+1,0,{cards:[c2,deck.pop()],bet:h.bet,fromSplit:true});beep(800);renderBJ()};renderBJ();
-
-/* SLOTS */
-const cabinets={pulse:{title:'PULSE',title2:'JACKPOT',badge:'7 / STAR / DIAMOND',symbols:['7','★','◆','🍒','BAR'],weights:['7','★','◆','🍒','BAR','◆','🍒','BAR','🍒','◆','BAR'],pays:[['7 7 7','25×'],['★ ★ ★','12×'],['◆ ◆ ◆','8×'],['🍒 🍒 🍒','5×'],['ANY EXACT PAIR','1.5×']],bonus:'PINBALL BONUS',desc:'Animated neon pinball with 2×, 5×, 10×, 25× and 50× bonus slots.'},wild:{title:'WILD',title2:'REACTOR',badge:'WILD / 7 / GEM / BAR',symbols:['W','7','💎','BAR','⚡'],weights:['W','W','7','7','💎','BAR','⚡','W','7','💎'],pays:[['W W W','30×'],['7 7 7','20×'],['💎 💎 💎','15×'],['⚡ ⚡ ⚡','10×'],['ANY EXACT PAIR','2×']],bonus:'REACTOR BOOST',desc:'A guaranteed energy boost bonus with a 5×–40× reactor multiplier.'},crystal:{title:'CRYSTAL',title2:'VAULT',badge:'GEM / STAR / 7 / ORB',symbols:['💎','★','7','🔷','🍒'],weights:['💎','💎','★','★','7','🔷','🍒','💎','★','7'],pays:[['💎 💎 💎','40×'],['★ ★ ★','18×'],['7 7 7','12×'],['🔷 🔷 🔷','9×'],['ANY EXACT PAIR','2×']],bonus:'VAULT DROP',desc:'Crystal bonus drops a guaranteed 3×–50× multiplier into your chip balance.'}};
-let cabinet='pulse',slotBusy=false,slotBet=100000;
-function randSym(){const c=cabinets[cabinet];return c.weights[Math.floor(Math.random()*c.weights.length)]}function slotMult(a){const c=cabinets[cabinet];const all=a.every(x=>x===a[0]);if(all){const row=c.pays.find(p=>p[0].split(' ').every(x=>x===a[0]));return row?Number(row[1].replace('×','')):5}if(a.filter(x=>x===a[0]).length===2||a.filter(x=>x===a[1]).length===2||a.filter(x=>x===a[2]).length===2)return 1.5;return 0}
-function renderCabinet(){const c=cabinets[cabinet];$('#slotTitle').textContent=c.title;$('#slotTitle2').textContent=c.title2;$('#cabinetBadge').textContent=c.badge;$('#bonusTitle').textContent=c.title+' payouts';$('#bonusName').textContent=c.bonus;$('#bonusDescription').textContent=c.desc;$('#paytable').innerHTML=c.pays.map(p=>`<div><span>${p[0]}</span><b>${p[1]}</b></div>`).join('')+'<div class="handpay-row"><span>HANDPAY</span><b>≥ 10M</b></div>';['#reel1','#reel2','#reel3'].forEach((id,i)=>$(id).textContent=c.symbols[i%c.symbols.length]);$$('[data-cabinet]').forEach(b=>b.classList.toggle('active',b.dataset.cabinet===cabinet))}
-$$('[data-cabinet]').forEach(b=>b.onclick=()=>{if(slotBusy)return;cabinet=b.dataset.cabinet;renderCabinet();beep(560,.07,'triangle')});
-$$('[data-squick]').forEach(b=>b.onclick=()=>{$('#slotAmount').value=fmt(Number(b.dataset.squick));$('#slotAmount').dispatchEvent(new Event('input'))});$('#slotAmount').oninput=()=>{$('#slotBetDisplay').textContent=$('#slotAmount').value||'—'};
-async function spinSlots(forced=null){if(slotBusy)return;const amt=parseAmount($('#slotAmount').value);if(!amt||amt<1)return toast('Enter a chip amount like 100K or 1M.');if(amt>credits)return toast('Not enough chips.');slotBet=amt;slotBusy=true;setCredits(credits-amt);$('#slotSpin').disabled=true;$('#slotStatus').textContent='SPINNING…';const reels=[$('#reel1'),$('#reel2'),$('#reel3')];reels.forEach(r=>r.classList.add('spinning'));const iv=setInterval(()=>{reels.forEach(r=>r.textContent=randSym());beep(160+Math.random()*80,.02,'square',.008)},75);await new Promise(r=>setTimeout(r,1100));clearInterval(iv);const out=forced||[randSym(),randSym(),randSym()];for(let i=0;i<3;i++){await new Promise(r=>setTimeout(r,230));reels[i].classList.remove('spinning');reels[i].textContent=out[i];beep(420+i*120,.09,'triangle',.05)}const mult=slotMult(out),payout=Math.floor(amt*mult);if(payout){setCredits(credits+payout);$('#slotStatus').textContent=`${out.join(' ')} • WIN ${fmt(payout)} • ${mult}×`;winSound();if(payout>=10000000)toast('HANDPAY! '+fmt(payout)+' chips')}else{$('#slotStatus').textContent=`${out.join(' ')} • NO WIN`;loseSound()}$('#slotSpin').disabled=false;slotBusy=false;if(out.filter(x=>x==='★').length>=2)launchBonus();}
-$('#slotSpin').onclick=()=>spinSlots();
-function launchBonus(forceMult=null){const opts=cabinet==='pulse'?[2,5,10,25,50]:cabinet==='wild'?[5,10,20,30,40]:[3,8,15,30,50];const mult=forceMult||opts[Math.floor(Math.random()*opts.length)];$('#pinballModal').classList.remove('hidden');$('#pinballResult').textContent='BONUS BALL LAUNCHING…';const ball=$('#pinballBall');ball.classList.remove('running');void ball.offsetWidth;ball.classList.add('running');[300,420,520,660,830,980].forEach((f,i)=>setTimeout(()=>beep(f,.08,'triangle',.04),i*350));setTimeout(()=>{const payout=slotBet*mult;setCredits(credits+payout);$('#pinballResult').textContent=`${mult}× MULTIPLIER • +${fmt(payout)} CHIPS`;winSound();if(payout>=10000000)toast('HANDPAY! '+fmt(payout)+' chips')},2850)}
-$('#forcePinball').onclick=()=>{slotBet=parseAmount($('#slotAmount').value)||100000;launchBonus()};$('#forceMega').onclick=()=>{slotBet=parseAmount($('#slotAmount').value)||100000;launchBonus(25)};$('#forceHandpay').onclick=()=>{const amt=parseAmount($('#slotAmount').value)||100000;const need=Math.max(10000000,amt*25);setCredits(credits+need);$('#slotStatus').textContent='HANDPAY TEST • +'+fmt(need);toast('HANDPAY! '+fmt(need)+' chips');winSound()};renderCabinet();
-
-
-/* PLINKO — fictional-credit arcade game */
-const plinkoRisks={
-  low:{label:'LOW RISK',mult:[.5,.7,1,1.2,1.5,1.2,1,.7,.5]},
-  medium:{label:'MEDIUM RISK',mult:[.2,.5,1.5,2,4,2,1.5,.5,.2]},
-  high:{label:'HIGH RISK',mult:[.1,.3,.8,3,8,3,.8,.3,.1]}
-};
-let plinkoRisk='low',plinkoBusy=false,plinkoBet=100000;
-const plinkoRows=$('#plinkoRows'),plinkoSlots=$('#plinkoSlots'),plinkoMap=$('#plinkoMap'),plinkoBall=$('#plinkoBall');
-function buildPlinko(){
-  plinkoRows.innerHTML='';
-  const rows=11;
-  for(let r=0;r<rows;r++){
-    const count=r+3;
-    for(let c=0;c<count;c++){
-      const p=document.createElement('i');
-      p.className='plinko-peg';
-      p.style.left=`${(c+0.5)*100/count}%`;
-      p.style.top=`${r*8.8+2}%`;
-      plinkoRows.appendChild(p);
-    }
-  }
-  renderPlinkoMap();
+function fmt(n){if(n>=1e9)return +(n/1e9).toFixed(2)+'B';if(n>=1e6)return +(n/1e6).toFixed(2)+'M';if(n>=1e3)return +(n/1e3).toFixed(2)+'K';return Math.floor(n).toLocaleString()}
+function amount(s){s=String(s).toUpperCase().replace(/,/g,'').trim();let m=1;if(s.endsWith('K'))m=1e3,s=s.slice(0,-1);if(s.endsWith('M'))m=1e6,s=s.slice(0,-1);if(s.endsWith('B'))m=1e9,s=s.slice(0,-1);return Number(s)*m}
+function balance(){ $('#balance').textContent=fmt(credits); $('#gameBalance').textContent=fmt(credits)}
+function add(n){credits+=n;balance();beep(500,.05)}
+function setBet(v){bet=Math.max(1,amount(v));$('#betInput').value=fmt(bet)}
+function beep(f=440,d=.05){if(!sound)return;try{const C=window.AudioContext||window.webkitAudioContext,c=new C(),o=c.createOscillator(),g=c.createGain();o.frequency.value=f;o.type='sine';g.gain.value=.025;o.connect(g);g.connect(c.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.stop(c.currentTime+d)}catch{}}
+function win(){beep(880,.1);setTimeout(()=>beep(1200,.13),100)}
+function lose(){beep(120,.16)}
+function betBox(actionLabel='PLAY'){return `<div class="control-title">CHIP BET</div><div class="bet"><input id="betInput" value="${fmt(bet)}"><button id="half">½</button><button id="double">2×</button></div><div class="quick">${['10K','100K','1M','5M'].map(x=>`<button data-q="${x}">${x}</button>`).join('')}</div><button class="action" id="action">${actionLabel}</button>`}
+function bindBet(){const i=$('#betInput');i.onchange=()=>{bet=amount(i.value)||0};$('#half').onclick=()=>setBet(bet/2);$('#double').onclick=()=>setBet(bet*2);$$('[data-q]').forEach(b=>b.onclick=()=>setBet(b.dataset.q))}
+function shell(title,stage,controls){$('#gameMount').innerHTML=`<div class="game-panel"><div class="stage ${title.toLowerCase().replaceAll(' ','-')}-stage">${stage}</div><aside class="controls">${controls}</aside></div>`;bindBet();balance()}
+function openGame(g){
+ currentGame=g;$('.view.active-view')?.classList.remove('active-view');$('#game').classList.add('active-view');$('#crumb').textContent=g.toUpperCase();
+ const names={roulette:'Roulette',blackjack:'Blackjack',slots:'Neon Slots',plinko:'Plinko',crash:'Crash',mines:'Mines',dice:'Dice',limbo:'Limbo'};
+ $('#gameTitle').textContent=names[g];$('#gameEyebrow').textContent=g==='slots'?'SLOT FLOOR':'ARCADE';
+ games[g]();
 }
-function renderPlinkoMap(){
-  const data=plinkoRisks[plinkoRisk];
-  plinkoMap.innerHTML='';
-  plinkoSlots.innerHTML='';
-  data.mult.forEach((m,i)=>{
-    const a=document.createElement('span');a.textContent=m+'×';plinkoMap.appendChild(a);
-    const s=document.createElement('div');s.className='plinko-slot';s.textContent=m+'×';s.dataset.i=i;plinkoSlots.appendChild(s);
-  });
-  $('#plinkoRiskLabel').textContent=data.label;
-}
-function setPlinkoRisk(r){
-  if(plinkoBusy)return;
-  plinkoRisk=r;$$('.risk-pills button').forEach(b=>b.classList.toggle('active',b.dataset.risk===r));
-  renderPlinkoMap();beep(620,.05,'triangle');
-}
-$$('.risk-pills button').forEach(b=>b.onclick=()=>setPlinkoRisk(b.dataset.risk));
-$$('[data-pquick]').forEach(b=>b.onclick=()=>{$('#plinkoAmount').value=b.dataset.pquick;$('#plinkoAmount').dispatchEvent(new Event('input'))});
-$('#plinkoAmount').oninput=()=>{
-  const n=parseAmount($('#plinkoAmount').value);
-  plinkoBet=Number.isFinite(n)?n:0;
-  $('#plinkoBetDisplay').textContent=Number.isFinite(n)?fmt(n):'—';
-  $('#plinkoChipVisual').textContent=Number.isFinite(n)?fmt(n):'—';
-};
-$('#plinkoAmount').dispatchEvent(new Event('input'));
-function plinkoPath(target){
-  const rows=11, center=5;
-  let pos=center, path=[];
-  for(let r=0;r<rows;r++){
-    const remaining=rows-r;
-    let dir=Math.random()<.5?-1:1;
-    if(pos<=1)dir=1;if(pos>=9)dir=-1;
-    pos=Math.max(0,Math.min(10,pos+dir));
-    path.push(pos);
-  }
-  // Bias the last few decisions toward the selected multiplier slot.
-  const desired=Math.round((target/8)*10);
-  while(path.length && Math.abs(path[path.length-1]-desired)>1){
-    const last=path[path.length-1];
-    path[path.length-1]=last+(desired>last?1:-1);
-  }
-  return path;
-}
-function animatePlinko(target,bet){
-  const path=plinkoPath(target), rows=path.length;
-  plinkoBall.classList.remove('dropping');plinkoBall.style.left='50%';plinkoBall.style.top='28px';void plinkoBall.offsetWidth;plinkoBall.classList.add('dropping');
-  let step=0;
-  const timer=setInterval(()=>{
-    if(step>=rows){clearInterval(timer);
-      const slot=$$('.plinko-slot')[target];if(slot){slot.classList.add('hit');setTimeout(()=>slot.classList.remove('hit'),700)}
-      const mult=plinkoRisks[plinkoRisk].mult[target], payout=Math.floor(bet*mult);
-      if(payout>0)setCredits(credits+payout);
-      const net=payout-bet;
-      $('#plinkoStatus').textContent=`LANDED • ${mult}×`;
-      $('#plinkoResult').textContent=`${mult}× • ${payout?'+':''}${fmt(net)} NET CHIPS`;
-      payout>=bet?winSound():loseSound();plinkoBusy=false;$('#plinkoDrop').disabled=false;return;
-    }
-    const x=9+path[step]*8.2;
-    const y=8+step*7.8;
-    plinkoBall.animate([{left:plinkoBall.style.left,top:plinkoBall.style.top},{left:`${x}%`,top:`${y}%`}],{duration:125,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
-    beep(240+step*18,.035,'triangle',.018);step++;
-  },135);
-}
-$('#plinkoDrop').onclick=()=>{
-  if(plinkoBusy)return;
-  const bet=parseAmount($('#plinkoAmount').value);
-  if(!bet||bet<1)return toast('Enter a chip amount like 100K or 1M.');
-  if(bet>credits)return toast('Not enough chips.');
-  plinkoBusy=true;setCredits(credits-bet);$('#plinkoDrop').disabled=true;$('#plinkoStatus').textContent='CHIP IN FLIGHT…';$('#plinkoResult').textContent='BOUNCING THROUGH THE BOARD…';
-  const target=Math.floor(Math.random()*9);animatePlinko(target,bet);
-};
-buildPlinko();
+function roulette(){shell('Roulette',`<div class="pointer"></div><div class="roulette-wheel" id="wheel"><span class="roulette-number" id="rnum">?</span><div class="roulette-center">N</div></div><div class="roulette-result" id="rres">PLACE A BET</div>`,`${betBox('SPIN')}<div class="control-title" style="margin-top:18px">BET TYPE</div><div class="bet-types">${['RED','BLACK','GREEN'].map(x=>`<button data-color="${x}">${x}</button>`).join('')}</div><div class="control-title" style="margin-top:15px">NUMBER</div><div class="bet-types" style="grid-template-columns:repeat(5,1fr)">${Array.from({length:37},(_,i)=>`<button data-num="${i}">${i}</button>`).join('')}</div>`);let color=null,num=null;$$('[data-color]').forEach(b=>b.onclick=()=>{color=b.dataset.color;$$('[data-color]').forEach(x=>x.classList.toggle('sel',x===b))});$$('[data-num]').forEach(b=>b.onclick=()=>{num=+b.dataset.num;$$('[data-num]').forEach(x=>x.classList.toggle('sel',x===b))});$('#action').onclick=()=>{bet=amount($('#betInput').value);if(!bet||bet>credits)return;credits-=bet;balance();const n=Math.floor(Math.random()*37),red=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36],c=n===0?'GREEN':red.includes(n)?'RED':'BLACK';const angle=-(n*9.729+720+Math.random()*30);$('#wheel').style.transform=`rotate(${angle}deg)`;setTimeout(()=>{$('#rnum').textContent=n;let won=0;if(num===n)won=bet*35;else if(color===c)won=bet*(c==='GREEN'?14:2);if(won){credits+=won;win()}else lose();balance();$('#rres').textContent=`${n} • ${c} • ${won?`WON ${fmt(won)}`:'NO WIN'}`},3250)}}
+function blackjack(){let player=[],dealer=[],deck=[];function newDeck(){deck=[];for(const s of ['♠','♥','♦','♣'])for(let n=1;n<=13;n++)deck.push({n,s})}function val(h){let v=h.reduce((a,c)=>a+(c.n>10?10:c.n),0),aces=h.filter(c=>c.n===1).length;while(aces&&v+10<=21)v+=10,aces--;return v}function card(c){return `<div class="playing-card ${c.s==='♥'||c.s==='♦'?'red':''}"><span>${c.n===1?'A':c.n===11?'J':c.n===12?'Q':c.n===13?'K':c.n}${c.s}</span><span>${c.s}</span></div>`}function draw(){return deck.splice(Math.floor(Math.random()*deck.length),1)[0]}function render(){shell('Blackjack',`<div class="table"><div class="hand-label">DEALER • <span class="score">${val(dealer)}</span></div><div class="hand">${dealer.map(card).join('')}</div><div class="hand-label">PLAYER • <span class="score">${val(player)}</span></div><div class="hand">${player.map(card).join('')}</div></div>`,`${betBox('DEAL')}<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:7px"><button class="ghost-action" id="hit">HIT</button><button class="ghost-action" id="stand">STAND</button><button class="ghost-action" id="dbl">DOUBLE</button><button class="ghost-action" id="split">SPLIT</button></div>`);bindBet();$('#action').onclick=deal;$('#hit').onclick=hit;$('#stand').onclick=stand;$('#dbl').onclick=()=>{if(player.length===2&&credits>=bet){credits-=bet;bet*=2;balance();hit();stand()}};$('#split').onclick=()=>{if(player.length===2&&player[0].n===player[1].n&&credits>=bet){credits-=bet;balance();$('#rres')?.remove();toast('Split demo: hands can be added in the next table expansion.')}}}function deal(){bet=amount($('#betInput').value);if(!bet||bet>credits)return;credits-=bet;newDeck();player=[draw(),draw()];dealer=[draw(),draw()];render();if(val(player)===21)stand()}function hit(){player.push(draw());render();if(val(player)>21)finish(false)}function stand(){while(val(dealer)<17)dealer.push(draw());render();finish(val(player)<=21&&(val(dealer)>21||val(player)>val(dealer)))}function finish(winIt){setTimeout(()=>{if(winIt){credits+=bet*2;win()}else lose();balance()},450)}newDeck();render()}
+function slots(){shell('Neon Slots',`<div class="reels"><div class="reel" id="a">7</div><div class="reel" id="b">★</div><div class="reel" id="c">7</div></div>`,`${betBox('SPIN')}<div class="control-title" style="margin-top:18px">CABINET</div><div class="quick"><button data-cab="classic">CLASSIC</button><button data-cab="wild">WILD</button><button data-cab="crystal">CRYSTAL</button></div><div class="control-title" style="margin-top:12px">BONUS MAP</div><div style="font-size:11px;line-height:2;color:#8b9d91">🍒🍒🍒 = 2×<br>★ ★ ★ = 5×<br>7 7 7 = 20×<br>💎💎💎 = 50×</div>`);let syms=['7','★','◆','●','BAR','🍒','💎'];$('#action').onclick=()=>{bet=amount($('#betInput').value);if(!bet||bet>credits)return;credits-=bet;balance();$$('.reel').forEach(x=>x.classList.add('spin'));let out=[];setTimeout(()=>{for(let i=0;i<3;i++)out.push(syms[Math.floor(Math.random()*syms.length)]);['a','b','c'].forEach((id,i)=>{$('#'+id).textContent=out[i];$('#'+id).classList.remove('spin')});let mult=out.every(x=>x==='7')?20:out.every(x=>x==='★')?5:out.every(x=>x==='💎')?50:out[0]==='🍒'&&out[1]==='🍒'&&out[2]==='🍒'?2:0;if(mult){credits+=bet*mult;win()}else lose();balance()},900)}}
+function plinko(){shell('Plinko',`<div class="plinko-board" id="pb"><div id="pegs"></div><div class="slotrow">${[.2,.5,1,2,5,2,1,.5,.2].map(x=>`<span>${x}×</span>`).join('')}</div></div>`,`${betBox('DROP CHIP')}<div class="control-title" style="margin-top:18px">RISK</div><div class="quick"><button>LOW</button><button>MEDIUM</button><button>HIGH</button></div>`);let p=$('#pegs');for(let r=0;r<10;r++)for(let c=0;c<r+3;c++){let e=document.createElement('i');e.className='peg';e.style.left=(30+c*4.5)+'%';e.style.top=(8+r*8)+'%';p.appendChild(e)}$('#action').onclick=()=>{bet=amount($('#betInput').value);if(!bet||bet>credits)return;credits-=bet;balance();let b=document.createElement('i');b.className='ball';b.style.left='50%';b.style.top='3%';$('#pb').appendChild(b);let x=50;let y=4;let t=setInterval(()=>{x+=(Math.random()>.5?4:-4);y+=7;b.style.left=x+'%';b.style.top=y+'%';if(y>78){clearInterval(t);let mult=[.2,.5,1,2,5,2,1,.5,.2][Math.floor(Math.random()*9)];let winAmt=Math.floor(bet*mult);credits+=winAmt;balance();if(winAmt>=bet)win();else lose();setTimeout(()=>b.remove(),300)}},120)}}
+function crash(){shell('Crash',`<div class="crash-stage"><div class="crash-number" id="cr">1.00×</div><div class="crash-line"><svg viewBox="0 0 600 240"><polyline id="crLine" points="0,230 80,220 150,225 240,165 330,185 420,90 520,120 600,15"/></svg></div></div>`,`${betBox('START ROUND')}<div id="cash" style="margin-top:15px;color:#7cff95;font-weight:1000;text-align:center">CASH OUT AVAILABLE AFTER START</div>`);$('#action').onclick=()=>{bet=amount($('#betInput').value);if(!bet||bet>credits)return;credits-=bet;balance();let m=1+Math.random()*8,cur=1;$('#action').disabled=true;let t=setInterval(()=>{cur+=.04+cur*.008;$('#cr').textContent=cur.toFixed(2)+'×';if(cur>=m){clearInterval(t);lose();$('#cash').textContent=`CRASHED AT ${m.toFixed(2)}×`;$('#action').disabled=false}else $('#cash').innerHTML=`<button class="action" id="cashout">CASH OUT ${cur.toFixed(2)}×</button>`},80);setTimeout(()=>{const b=$('#cashout');if(b)b.onclick=()=>{clearInterval(t);credits+=Math.floor(bet*cur);balance();win();$('#cash').textContent=`PAID ${fmt(Math.floor(bet*cur))}`}},100)}}
+function mines(){shell('Mines',`<div style="display:grid;place-items:center"><div class="mine-grid" id="mg">${Array.from({length:25},(_,i)=>`<button data-cell="${i}">?</button>`).join('')}</div></div>`,`${betBox('START')}<div style="font-size:10px;color:#718276;line-height:1.5;margin-top:12px">Reveal safe tiles. A mine ends the round. Fictional chips only.</div>`);let started=false,mineset=[];$('#action').onclick=()=>{bet=amount($('#betInput').value);if(!bet||bet>credits)return;credits-=bet;balance();mineset=[];while(mineset.length<5){let n=Math.floor(Math.random()*25);if(!mineset.includes(n))mineset.push(n)}started=true;$$('[data-cell]').forEach(x=>x.textContent='?')};$$('[data-cell]').forEach(b=>b.onclick=()=>{if(!started)return;let n=+b.dataset.cell;if(mineset.includes(n)){b.classList.add('bomb');b.textContent='✦';lose();started=false}else{b.classList.add('safe');b.textContent='◆';credits+=Math.floor(bet*.35);balance();win()}})}
+function dice(){shell('Dice',`<div class="dice-stage"><div class="big-dice" id="dv">—</div><div style="color:#66776b;font-size:10px">ROLL 1–100</div></div>`,`${betBox('ROLL')}<div class="bet-types"><button>LOW &lt; 50</button><button>HIGH &gt; 50</button><button>EXACT</button></div>`);$('#action').onclick=()=>{bet=amount($('#betInput').value);if(!bet||bet>credits)return;credits-=bet;let n=Math.floor(Math.random()*100)+1;$('#dv').textContent=n;let w=n>50;let p=w?Math.floor(bet*1.9):0;if(p)credits+=p;balance();w?win():lose()}}
+function limbo(){shell('Limbo',`<div class="limbo-stage"><div class="limbo-mult" id="lm">1.00×</div><div style="color:#756d80;font-size:10px">TARGET MULTIPLIER</div></div>`,`${betBox('ROLL')}<div class="control-title" style="margin-top:18px">TARGET</div><div class="bet"><input id="target" value="2.00"></div>`);$('#action').onclick=()=>{bet=amount($('#betInput').value);let target=Math.max(1.01,Number($('#target').value));if(!bet||bet>credits)return;credits-=bet;let m=1+Math.random()*9;$('#lm').textContent=m.toFixed(2)+'×';if(m>=target){credits+=Math.floor(bet*target);win()}else lose();balance()}}
+const games={roulette,blackjack,slots,plinko,crash,mines,dice,limbo};
+$$('[data-game]').forEach(b=>b.onclick=()=>openGame(b.dataset.game));
+$$('[data-view]').forEach(b=>b.onclick=()=>{$$('.view').forEach(v=>v.classList.remove('active-view'));$('#'+b.dataset.view).classList.add('active-view');$('#crumb').textContent=b.dataset.view.toUpperCase()});
+$$('.nav').forEach(b=>b.onclick=()=>{$$('.nav').forEach(x=>x.classList.remove('active'));b.classList.add('active');if(b.dataset.view==='home'){$$('.view').forEach(v=>v.classList.remove('active-view'));$('#home').classList.add('active-view')}});
+$('#plus').onclick=()=>add(1000000);$('#soundBtn').onclick=()=>{sound=!sound;$('#soundBtn').textContent=sound?'🔊 Sound':'🔇 Sound'};
+$('#devBtn').onclick=()=>$('#devModal').classList.add('open');$('#closeDev').onclick=()=>$('#devModal').classList.remove('open');$('#devModal').onclick=e=>{if(e.target.id==='devModal')e.target.classList.remove('open')};
+$$('[data-add]').forEach(b=>b.onclick=()=>add(amount(b.dataset.add)));$('#reset').onclick=()=>{credits=10000000;balance()};
+$('#mobileMenu').onclick=()=>$('.sidebar').classList.toggle('open');
+balance();
