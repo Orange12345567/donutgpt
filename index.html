@@ -55,6 +55,22 @@
           </div>
           <div class="game-meta"><div><small>NEON MACHINE</small><h3>Pulse Slots</h3><p>Multiple cabinets • bonus rounds • handpays</p></div><span class="launch">PLAY ↗</span></div>
         </button>
+
+        <button class="game-card plinko-card" data-go="plinko">
+          <div class="cover-scene plinko-cover">
+            <div class="cover-label">NEON PLINKO</div>
+            <div class="plinko-orb orb-a"></div><div class="plinko-orb orb-b"></div>
+            <div class="plinko-mini-board">
+              <i></i><i></i><i></i><i></i><i></i>
+              <i></i><i></i><i></i><i></i><i></i><i></i>
+              <i></i><i></i><i></i><i></i><i></i><i></i>
+              <b>×</b>
+            </div>
+            <div class="cover-multis"><span>2×</span><span>10×</span><span>50×</span></div>
+            <div class="cover-sweep"></div>
+          </div>
+          <div class="game-meta"><div><small>DROP MACHINE</small><h3>Neon Plinko</h3><p>Animated peg board • risk modes • multiplier slots</p></div><span class="launch">PLAY ↗</span></div>
+        </button>
       </div>
 
       <div class="safe-note"><span>◆</span> This is a fictional-credit arcade demo. No DonutSMP transfer, cash-out, or real-value wagering is connected.</div>
@@ -109,6 +125,50 @@
       <div class="handpay-strip"><span>HANDPAY THRESHOLD</span><b>10M+ CHIPS</b><span>Every bonus test is guaranteed to award something.</span></div>
       <div id="pinballModal" class="modal hidden"><div class="modal-card pinball-card"><button class="modal-x" data-close="pinballModal">×</button><p class="eyebrow">BONUS ROUND</p><h2>PINBALL MULTIPLIER</h2><div id="pinballBoard" class="pinball-board"><div class="bumper b1">2×</div><div class="bumper b2">3×</div><div class="bumper b3">5×</div><div class="bumper b4">10×</div><div class="bumper b5">25×</div><div class="bumper b6">50×</div><div id="pinballBall" class="pinball-ball"></div><div class="pin-slot s1">2×</div><div class="pin-slot s2">5×</div><div class="pin-slot s3">10×</div><div class="pin-slot s4">25×</div><div class="pin-slot s5">50×</div></div><div id="pinballResult" class="bonus-result">LAUNCHING...</div></div></div>
     </section>
+
+    <section id="plinko" class="view game-view">
+      <div class="game-header">
+        <button class="back-btn" data-go="home">← FLOOR</button>
+        <div><p class="eyebrow">DROP MACHINE</p><h2>Neon Plinko</h2></div>
+        <div class="bet-display">BET <b id="plinkoBetDisplay">100K</b> CHIPS</div>
+      </div>
+
+      <div class="plinko-layout">
+        <div class="plinko-stage glass">
+          <div class="plinko-topline">
+            <div><span class="eyebrow">LIVE DROP</span><strong id="plinkoStatus">READY</strong></div>
+            <div class="risk-pills">
+              <button class="active" data-risk="low">LOW</button>
+              <button data-risk="medium">MEDIUM</button>
+              <button data-risk="high">HIGH</button>
+            </div>
+          </div>
+          <div id="plinkoBoard" class="plinko-board">
+            <div class="plinko-glow"></div>
+            <div class="plinko-rows" id="plinkoRows"></div>
+            <div class="plinko-ball" id="plinkoBall"></div>
+            <div class="plinko-slots" id="plinkoSlots"></div>
+          </div>
+          <div class="plinko-result" id="plinkoResult">DROP A CHIP</div>
+        </div>
+
+        <aside class="plinko-console glass">
+          <div class="plinko-chip-display"><span>CHIP BET</span><b id="plinkoChipVisual">100K</b></div>
+          <label class="clean-label">BET AMOUNT<input id="plinkoAmount" value="100K" inputmode="text"></label>
+          <div class="quick-bets">
+            <button data-pquick="10K">10K</button><button data-pquick="100K">100K</button>
+            <button data-pquick="1M">1M</button><button data-pquick="5M">5M</button>
+          </div>
+          <button id="plinkoDrop" class="plinko-drop-btn">DROP CHIP</button>
+          <div class="plinko-board-card">
+            <div class="board-card-head"><span>MULTIPLIER MAP</span><b id="plinkoRiskLabel">LOW RISK</b></div>
+            <div id="plinkoMap" class="plinko-map"></div>
+          </div>
+          <div class="plinko-note">Fictional demo chips only. Every drop resolves to one of the visible multiplier slots.</div>
+        </aside>
+      </div>
+    </section>
+
   </main>
 
   <div id="devModal" class="modal hidden"><div class="modal-card dev-card"><button class="modal-x" data-close="devModal">×</button><p class="eyebrow">DEMO TOOLS</p><h2>Developer Menu</h2><p class="muted">Local fictional chips only. Stored in this browser.</p><div class="dev-grid"><button data-addcredits="1000000">+1M CHIPS</button><button data-addcredits="10000000">+10M CHIPS</button><button data-addcredits="100000000">+100M CHIPS</button><button id="resetCredits">RESET TO 10M</button></div></div></div>

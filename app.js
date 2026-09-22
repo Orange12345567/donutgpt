@@ -47,3 +47,99 @@ async function spinSlots(forced=null){if(slotBusy)return;const amt=parseAmount($
 $('#slotSpin').onclick=()=>spinSlots();
 function launchBonus(forceMult=null){const opts=cabinet==='pulse'?[2,5,10,25,50]:cabinet==='wild'?[5,10,20,30,40]:[3,8,15,30,50];const mult=forceMult||opts[Math.floor(Math.random()*opts.length)];$('#pinballModal').classList.remove('hidden');$('#pinballResult').textContent='BONUS BALL LAUNCHING…';const ball=$('#pinballBall');ball.classList.remove('running');void ball.offsetWidth;ball.classList.add('running');[300,420,520,660,830,980].forEach((f,i)=>setTimeout(()=>beep(f,.08,'triangle',.04),i*350));setTimeout(()=>{const payout=slotBet*mult;setCredits(credits+payout);$('#pinballResult').textContent=`${mult}× MULTIPLIER • +${fmt(payout)} CHIPS`;winSound();if(payout>=10000000)toast('HANDPAY! '+fmt(payout)+' chips')},2850)}
 $('#forcePinball').onclick=()=>{slotBet=parseAmount($('#slotAmount').value)||100000;launchBonus()};$('#forceMega').onclick=()=>{slotBet=parseAmount($('#slotAmount').value)||100000;launchBonus(25)};$('#forceHandpay').onclick=()=>{const amt=parseAmount($('#slotAmount').value)||100000;const need=Math.max(10000000,amt*25);setCredits(credits+need);$('#slotStatus').textContent='HANDPAY TEST • +'+fmt(need);toast('HANDPAY! '+fmt(need)+' chips');winSound()};renderCabinet();
+
+
+/* PLINKO — fictional-credit arcade game */
+const plinkoRisks={
+  low:{label:'LOW RISK',mult:[.5,.7,1,1.2,1.5,1.2,1,.7,.5]},
+  medium:{label:'MEDIUM RISK',mult:[.2,.5,1.5,2,4,2,1.5,.5,.2]},
+  high:{label:'HIGH RISK',mult:[.1,.3,.8,3,8,3,.8,.3,.1]}
+};
+let plinkoRisk='low',plinkoBusy=false,plinkoBet=100000;
+const plinkoRows=$('#plinkoRows'),plinkoSlots=$('#plinkoSlots'),plinkoMap=$('#plinkoMap'),plinkoBall=$('#plinkoBall');
+function buildPlinko(){
+  plinkoRows.innerHTML='';
+  const rows=11;
+  for(let r=0;r<rows;r++){
+    const count=r+3;
+    for(let c=0;c<count;c++){
+      const p=document.createElement('i');
+      p.className='plinko-peg';
+      p.style.left=`${(c+0.5)*100/count}%`;
+      p.style.top=`${r*8.8+2}%`;
+      plinkoRows.appendChild(p);
+    }
+  }
+  renderPlinkoMap();
+}
+function renderPlinkoMap(){
+  const data=plinkoRisks[plinkoRisk];
+  plinkoMap.innerHTML='';
+  plinkoSlots.innerHTML='';
+  data.mult.forEach((m,i)=>{
+    const a=document.createElement('span');a.textContent=m+'×';plinkoMap.appendChild(a);
+    const s=document.createElement('div');s.className='plinko-slot';s.textContent=m+'×';s.dataset.i=i;plinkoSlots.appendChild(s);
+  });
+  $('#plinkoRiskLabel').textContent=data.label;
+}
+function setPlinkoRisk(r){
+  if(plinkoBusy)return;
+  plinkoRisk=r;$$('.risk-pills button').forEach(b=>b.classList.toggle('active',b.dataset.risk===r));
+  renderPlinkoMap();beep(620,.05,'triangle');
+}
+$$('.risk-pills button').forEach(b=>b.onclick=()=>setPlinkoRisk(b.dataset.risk));
+$$('[data-pquick]').forEach(b=>b.onclick=()=>{$('#plinkoAmount').value=b.dataset.pquick;$('#plinkoAmount').dispatchEvent(new Event('input'))});
+$('#plinkoAmount').oninput=()=>{
+  const n=parseAmount($('#plinkoAmount').value);
+  plinkoBet=Number.isFinite(n)?n:0;
+  $('#plinkoBetDisplay').textContent=Number.isFinite(n)?fmt(n):'—';
+  $('#plinkoChipVisual').textContent=Number.isFinite(n)?fmt(n):'—';
+};
+$('#plinkoAmount').dispatchEvent(new Event('input'));
+function plinkoPath(target){
+  const rows=11, center=5;
+  let pos=center, path=[];
+  for(let r=0;r<rows;r++){
+    const remaining=rows-r;
+    let dir=Math.random()<.5?-1:1;
+    if(pos<=1)dir=1;if(pos>=9)dir=-1;
+    pos=Math.max(0,Math.min(10,pos+dir));
+    path.push(pos);
+  }
+  // Bias the last few decisions toward the selected multiplier slot.
+  const desired=Math.round((target/8)*10);
+  while(path.length && Math.abs(path[path.length-1]-desired)>1){
+    const last=path[path.length-1];
+    path[path.length-1]=last+(desired>last?1:-1);
+  }
+  return path;
+}
+function animatePlinko(target,bet){
+  const path=plinkoPath(target), rows=path.length;
+  plinkoBall.classList.remove('dropping');plinkoBall.style.left='50%';plinkoBall.style.top='28px';void plinkoBall.offsetWidth;plinkoBall.classList.add('dropping');
+  let step=0;
+  const timer=setInterval(()=>{
+    if(step>=rows){clearInterval(timer);
+      const slot=$$('.plinko-slot')[target];if(slot){slot.classList.add('hit');setTimeout(()=>slot.classList.remove('hit'),700)}
+      const mult=plinkoRisks[plinkoRisk].mult[target], payout=Math.floor(bet*mult);
+      if(payout>0)setCredits(credits+payout);
+      const net=payout-bet;
+      $('#plinkoStatus').textContent=`LANDED • ${mult}×`;
+      $('#plinkoResult').textContent=`${mult}× • ${payout?'+':''}${fmt(net)} NET CHIPS`;
+      payout>=bet?winSound():loseSound();plinkoBusy=false;$('#plinkoDrop').disabled=false;return;
+    }
+    const x=9+path[step]*8.2;
+    const y=8+step*7.8;
+    plinkoBall.animate([{left:plinkoBall.style.left,top:plinkoBall.style.top},{left:`${x}%`,top:`${y}%`}],{duration:125,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
+    beep(240+step*18,.035,'triangle',.018);step++;
+  },135);
+}
+$('#plinkoDrop').onclick=()=>{
+  if(plinkoBusy)return;
+  const bet=parseAmount($('#plinkoAmount').value);
+  if(!bet||bet<1)return toast('Enter a chip amount like 100K or 1M.');
+  if(bet>credits)return toast('Not enough chips.');
+  plinkoBusy=true;setCredits(credits-bet);$('#plinkoDrop').disabled=true;$('#plinkoStatus').textContent='CHIP IN FLIGHT…';$('#plinkoResult').textContent='BOUNCING THROUGH THE BOARD…';
+  const target=Math.floor(Math.random()*9);animatePlinko(target,bet);
+};
+buildPlinko();

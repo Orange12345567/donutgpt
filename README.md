@@ -62,3 +62,8 @@ Then open `http://localhost:3000`.
 - `vercel.json` — static Vercel routing
 
 Everything is fictional demo credit only. There is no DonutSMP bot transfer, cash-out, or real-value wagering connection.
+
+## Latest build
+- Added Neon Plinko with animated peg drops, Low/Medium/High risk maps, chip notation, multiplier slots, and polished responsive UI.
+- Added stronger colorful motion/hover effects across the game floor and new-game architecture.
+- The project remains fictional-credit only; no DonutSMP transfer, cash-out, or real-value wagering is connected.
