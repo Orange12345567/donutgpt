@@ -1,50 +1,53 @@
-# NEON VAULT — Casino-Style Arcade Demo
+# NEON VAULT — Arcade Demo
 
-This is a **fictional-credit arcade demo**. It has no account system, deposits, cash-out, real-money wagering, DonutSMP bot connection, or item/value transfer.
+A static, fictional-credit arcade prototype designed to drop into GitHub and deploy directly on Vercel.
 
 ## Included
-- Starts at 10M demo credits
-- Dark black + neon-green metallic UI
-- Animated game covers
-- Roulette with 0–36 number betting plus red/black/even/odd/high/low
-- Roulette wheel/result sync
-- Shorthand bets: `10K`, `100K`, `1M`, `5M`
+- Starts with 10M fictional chips
+- Dark black + metallic neon-green UI
+- Animated 3D-style game covers
+- Roulette with all 0–36 pockets, red/black/even/odd/low/high bets
+- Roulette result and pocket/color logic use the same wheel order, so the displayed result matches the winning pocket
+- Chip-style betting with `10K`, `100K`, `1M`, and `5M` shortcuts
 - Blackjack with Hit, Stand, Double, and Split
-- Slots with synchronized reel stopping
-- Generated browser audio (no external audio files)
-- Pinball multiplier bonus
-- Bonus test buttons and handpay display
-- Developer credit menu
-- Saves demo credits in localStorage
+- Three slot cabinets: Pulse Jackpot, Wild Reactor, Crystal Vault
+- Synchronized reel stopping and exact-pair payout logic
+- Animated bonus board with guaranteed bonus test buttons
+- 2×/5×/10×/25×/50× style bonus multipliers depending on cabinet
+- Handpay display at 10M+ chips
+- Generated browser audio for UI, roulette, blackjack, slots, and bonuses
+- Developer menu for adding/resetting fictional chips
+- LocalStorage persistence
 - Mobile responsive
 - No build step required
 
+## Safety note
+This build intentionally does **not** include Russian roulette or an animated revolver. That would turn a dangerous real-world activity into an interactive game. A future replacement can use a harmless sci-fi chamber/reactor mechanic instead.
+
 ## Fastest GitHub + Vercel deployment
-1. Unzip this folder.
+1. Unzip the folder.
 2. Create a new empty GitHub repository.
-3. Upload **all files inside** `neon-arcade-demo` to the repository root.
+3. Upload all files inside `neon-arcade-demo` to the repository root.
 4. In Vercel, choose **Add New → Project**.
-5. Import your GitHub repository.
+5. Import the GitHub repository.
 6. Framework preset: **Other**.
-7. Leave build command empty.
+7. Leave the build command empty.
 8. Deploy.
 
-## PowerShell: create a Git repository from the folder
-Open PowerShell inside the unzipped folder and run:
+## PowerShell: create the Git repository
+Open PowerShell inside the unzipped folder:
 
 ```powershell
 git init
 git add .
-git commit -m "Initial Neon Vault demo"
+git commit -m "Neon Vault arcade demo"
 git branch -M main
 git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPO.git
 git push -u origin main
 ```
 
-If Git asks you to sign in, complete the GitHub login window.
-
 ## Run locally
-Because it is static, you can open `index.html` directly. For a local web server, if Python is installed:
+If Python is installed:
 
 ```powershell
 python -m http.server 3000
@@ -53,10 +56,9 @@ python -m http.server 3000
 Then open `http://localhost:3000`.
 
 ## Files
-- `index.html` — page structure
-- `style.css` — visuals and responsive layout
-- `app.js` — credits, roulette, blackjack, slots, sounds, dev tools
-- `vercel.json` — Vercel static routing
+- `index.html` — page structure and game screens
+- `style.css` — dark 3D/neon UI, animations, tables, covers
+- `app.js` — chip system, roulette, blackjack, slots, bonuses, sound, dev tools
+- `vercel.json` — static Vercel routing
 
-## Safe future expansion
-Good future additions are more **fictional-credit arcade games**, achievements, cosmetic themes, leaderboards using points with no cash value, and multiplayer social features. Keep real-money/item deposits and cash-out disabled.
+Everything is fictional demo credit only. There is no DonutSMP bot transfer, cash-out, or real-value wagering connection.
