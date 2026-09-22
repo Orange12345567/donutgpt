@@ -1,71 +1,98 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NEON VAULT — Arcade Demo</title>
-<link rel="stylesheet" href="style.css">
+<meta name="theme-color" content="#050807">
+<title>Neon Vault — Demo Arcade</title>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="brand"><span class="brand-mark">N</span><div><b>NEON</b><strong>VAULT</strong></div></div>
-    <nav>
-      <button class="nav active" data-view="home">⌂ <span>Lobby</span></button>
-      <button class="nav" data-view="casino">◈ <span>Casino</span></button>
-      <button class="nav" data-view="quick">⚡ <span>Quick Games</span></button>
-    </nav>
-    <div class="side-title">GAMES</div>
-    <div class="game-links">
-      <button data-game="roulette">Roulette</button><button data-game="blackjack">Blackjack</button>
-      <button data-game="slots">Slots</button><button data-game="plinko">Plinko</button>
-      <button data-game="crash">Crash</button><button data-game="mines">Mines</button>
-      <button data-game="dice">Dice</button><button data-game="limbo">Limbo</button>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <button class="brand" data-home><span class="brand-logo">N</span><span><b>NEON</b><em>VAULT</em></span></button>
+    <div class="demo-pill"><i></i> FICTIONAL DEMO</div>
+    <div class="menu-title">NAVIGATION</div>
+    <button class="menu-btn active" data-home>⌂ <span>Lobby</span></button>
+    <button class="menu-btn" data-section="slotsSection">▦ <span>Slots</span></button>
+    <button class="menu-btn" data-section="quickSection">⚡ <span>Quick Games</span></button>
+    <button class="menu-btn" data-section="tableSection">◈ <span>Table</span></button>
+    <div class="menu-title games">GAMES</div>
+    <div class="game-menu">
+      <button data-game="roulette">Roulette <small>HOT</small></button>
+      <button data-game="blackjack">Blackjack</button>
+      <button data-game="slots-classic">Vault 777</button>
+      <button data-game="slots-wild">Wild Reactor</button>
+      <button data-game="slots-crystal">Crystal Rush</button>
+      <button data-game="slots-neon">Neon Fruits</button>
+      <button data-game="slots-cosmic">Cosmic 7s</button>
+      <button data-game="plinko">Plinko <small>NEW</small></button>
+      <button data-game="crash">Crash</button>
+      <button data-game="mines">Mines</button>
+      <button data-game="dice">Dice</button>
+      <button data-game="limbo">Limbo</button>
     </div>
     <div class="side-bottom">
-      <button id="soundBtn">🔊 Sound</button><button id="devBtn">⚙ Dev</button>
-      <small>DEMO MODE • FICTIONAL CHIPS</small>
+      <button id="soundBtn">🔊 Sound <small>ON</small></button>
+      <button id="devBtn">⚙ Developer</button>
+      <p>10M starting chips<br>local browser demo</p>
     </div>
   </aside>
 
-  <main>
+  <main class="main">
     <header class="topbar">
-      <button class="mobile-menu" id="mobileMenu">☰</button>
+      <button id="mobileMenu" class="mobile-menu">☰</button>
       <div class="crumb">NEON VAULT <span>/</span> <b id="crumb">LOBBY</b></div>
-      <div class="balance"><span>DEMO BALANCE</span><b id="balance">10M</b><button id="plus">＋</button></div>
+      <div class="wallet"><span class="chip">N</span><div><small>DEMO CHIPS</small><b id="balance">10M</b></div><button id="plusChip">＋1M</button></div>
     </header>
 
-    <section id="home" class="view active-view">
+    <section class="page active" id="homePage">
       <div class="hero">
-        <div>
-          <p class="eyebrow">THE FICTIONAL ARCADE</p>
-          <h1>PLAY <i>LOUD.</i><br>STAY <em>NEON.</em></h1>
-          <p class="hero-sub">A polished arcade demo with fictional chips, instant games, animated tables and zero real-money wagering.</p>
-          <div class="hero-actions"><button class="primary" data-game="roulette">PLAY ROULETTE →</button><button class="ghost" data-game="crash">TRY CRASH</button></div>
+        <div class="hero-copy">
+          <p class="eyebrow">V4 • REBUILT GAME FLOOR</p>
+          <h1>Dark.<br><span>Clean.</span><br>Animated.</h1>
+          <p>Every game now has dedicated controls, visible outcomes, proper animations and original local cover art. This build uses fictional chips only.</p>
+          <div class="hero-actions"><button class="primary" data-game="roulette">PLAY ROULETTE →</button><button class="secondary" data-section="slotsSection">BROWSE SLOTS</button></div>
+          <div class="hero-metrics"><div><b>12</b><span>GAMES</span></div><div><b>5</b><span>SLOT ROOMS</span></div><div><b>6</b><span>DICE SIDES</span></div></div>
         </div>
-        <div class="hero-art"><div class="orb"></div><div class="ring r1"></div><div class="ring r2"></div><div class="hero-chip">N</div><div class="hero-spark s1"></div><div class="hero-spark s2"></div></div>
+        <div class="hero-art"><div class="hero-ring a"></div><div class="hero-ring b"></div><div class="hero-orb">N</div><div class="hero-chip c1">1M</div><div class="hero-chip c2">100K</div><div class="hero-chip c3">5M</div></div>
       </div>
 
-      <div class="section-head"><div><p class="eyebrow">POPULAR</p><h2>Featured games</h2></div><span>8 GAMES • LIVE DEMO</span></div>
-      <div class="cards">
-        <button class="card roulette" data-game="roulette"><div class="cover"><span class="tag">HOT</span><div class="wheel-mini"></div><div class="cover-title">ROULETTE</div></div><footer><b>Roulette</b><small>Number + color bets</small><strong>PLAY ↗</strong></footer></button>
-        <button class="card blackjack" data-game="blackjack"><div class="cover"><span class="tag blue">TABLE</span><div class="cards-art"><span>♠</span><span>♥</span></div><div class="cover-title">BLACKJACK</div></div><footer><b>Blackjack</b><small>Hit • double • split</small><strong>PLAY ↗</strong></footer></button>
-        <button class="card slots" data-game="slots"><div class="cover"><span class="tag purple">JACKPOT</span><div class="reels-art"><i>7</i><i>★</i><i>7</i></div><div class="cover-title">NEON SLOTS</div></div><footer><b>Neon Slots</b><small>3 cabinets • bonuses</small><strong>PLAY ↗</strong></footer></button>
-        <button class="card plinko" data-game="plinko"><div class="cover"><span class="tag">NEW</span><div class="pegs-art"></div><div class="cover-title">PLINKO</div></div><footer><b>Plinko</b><small>Drop into multipliers</small><strong>PLAY ↗</strong></footer></button>
-        <button class="card crash" data-game="crash"><div class="cover"><span class="tag orange">FAST</span><div class="chart-art"><b>1.00×</b><svg viewBox="0 0 300 150"><polyline points="10,135 65,120 95,128 140,85 175,96 215,40 260,55 295,10"/></svg></div><div class="cover-title">CRASH</div></div><footer><b>Crash</b><small>Cash out before the drop</small><strong>PLAY ↗</strong></footer></button>
-        <button class="card mines" data-game="mines"><div class="cover"><span class="tag red">TENSE</span><div class="mine-art"><i>✦</i><i>◆</i><i>✦</i><i>◆</i><i>✦</i></div><div class="cover-title">MINES</div></div><footer><b>Mines</b><small>Reveal safe tiles</small><strong>PLAY ↗</strong></footer></button>
-        <button class="card dice" data-game="dice"><div class="cover"><span class="tag blue">QUICK</span><div class="dice-art"><b>6</b><b>2</b></div><div class="cover-title">DICE</div></div><footer><b>Dice</b><small>High / low / target</small><strong>PLAY ↗</strong></footer></button>
-        <button class="card limbo" data-game="limbo"><div class="cover"><span class="tag purple">INSTANT</span><div class="limbo-art">×<b>12.48</b></div><div class="cover-title">LIMBO</div></div><footer><b>Limbo</b><small>Pick a multiplier</small><strong>PLAY ↗</strong></footer></button>
+      <div class="section-head" id="tableSection"><div><p class="eyebrow">TABLE FLOOR</p><h2>Built to feel like a real game room</h2></div><span>ANIMATED • ORIGINAL ART</span></div>
+      <div class="cards four">
+        <article class="game-card" data-game="roulette"><div class="cover"><img src="assets/roulette.svg"><span class="pill hot">HOT</span><strong>ROULETTE</strong></div><div class="card-foot"><b>Neon Roulette</b><small>37 pockets • number & color</small><em>PLAY ↗</em></div></article>
+        <article class="game-card" data-game="blackjack"><div class="cover"><img src="assets/blackjack.svg"><span class="pill blue">TABLE</span><strong>BLACKJACK</strong></div><div class="card-foot"><b>Blackjack 21</b><small>Hit • double • split</small><em>PLAY ↗</em></div></article>
+        <article class="game-card" data-game="plinko"><div class="cover"><img src="assets/plinko.svg"><span class="pill new">NEW</span><strong>PLINKO</strong></div><div class="card-foot"><b>Neon Plinko</b><small>Low • medium • high risk</small><em>PLAY ↗</em></div></article>
+        <article class="game-card" data-game="crash"><div class="cover"><img src="assets/crash.svg"><span class="pill orange">LIVE</span><strong>CRASH</strong></div><div class="card-foot"><b>Vector Crash</b><small>Live multiplier • cash out</small><em>PLAY ↗</em></div></article>
       </div>
+
+      <div class="section-head" id="slotsSection"><div><p class="eyebrow">SLOT FLOOR</p><h2>Five unique machines</h2></div><span>EVERY ROOM HAS ITS OWN BONUS</span></div>
+      <div class="cards five">
+        <article class="game-card" data-game="slots-classic"><div class="cover"><img src="assets/slots-classic.svg"><span class="pill">777</span><strong>VAULT 777</strong></div><div class="card-foot"><b>Vault 777</b><small>Jackpot wheel</small><em>PLAY ↗</em></div></article>
+        <article class="game-card" data-game="slots-wild"><div class="cover"><img src="assets/slots-wild.svg"><span class="pill blue">WILD</span><strong>WILD REACTOR</strong></div><div class="card-foot"><b>Wild Reactor</b><small>Reactor charge</small><em>PLAY ↗</em></div></article>
+        <article class="game-card" data-game="slots-crystal"><div class="cover"><img src="assets/slots-crystal.svg"><span class="pill purple">GEMS</span><strong>CRYSTAL RUSH</strong></div><div class="card-foot"><b>Crystal Rush</b><small>Gem cascade</small><em>PLAY ↗</em></div></article>
+        <article class="game-card" data-game="slots-neon"><div class="cover"><img src="assets/slots-neon.svg"><span class="pill pink">FRUIT</span><strong>NEON FRUITS</strong></div><div class="card-foot"><b>Neon Fruits</b><small>Fruit burst</small><em>PLAY ↗</em></div></article>
+        <article class="game-card" data-game="slots-cosmic"><div class="cover"><img src="assets/slots-cosmic.svg"><span class="pill cyan">SPACE</span><strong>COSMIC 7S</strong></div><div class="card-foot"><b>Cosmic 7s</b><small>Star burst</small><em>PLAY ↗</em></div></article>
+      </div>
+
+      <div class="section-head" id="quickSection"><div><p class="eyebrow">QUICK FLOOR</p><h2>Fast arcade rounds</h2></div><span>SMOOTH CONTROLS</span></div>
+      <div class="cards three">
+        <article class="game-card" data-game="mines"><div class="cover"><img src="assets/mines.svg"><span class="pill hot">TENSE</span><strong>MINES</strong></div><div class="card-foot"><b>Neon Mines</b><small>Safe tiles • streak reward</small><em>PLAY ↗</em></div></article>
+        <article class="game-card" data-game="dice"><div class="cover"><img src="assets/dice.svg"><span class="pill blue">6 SIDES</span><strong>DICE</strong></div><div class="card-foot"><b>Six-Sided Dice</b><small>High • low • exact</small><em>PLAY ↗</em></div></article>
+        <article class="game-card" data-game="limbo"><div class="cover"><img src="assets/limbo.svg"><span class="pill purple">LIVE</span><strong>LIMBO</strong></div><div class="card-foot"><b>Limbo</b><small>Rising multiplier • cash out</small><em>PLAY ↗</em></div></article>
+      </div>
+      <div class="notice">◆ FICTIONAL DEMO CHIPS ONLY — no DonutSMP balance transfer, payments, cash-out or real-money wagering is connected.</div>
     </section>
 
-    <section id="game" class="view">
-      <div class="gamebar"><button class="back" data-view="home">← LOBBY</button><div><p class="eyebrow" id="gameEyebrow">GAME</p><h2 id="gameTitle">Roulette</h2></div><div class="game-balance">CHIPS <b id="gameBalance">10M</b></div></div>
-      <div id="gameMount"></div>
+    <section class="page" id="gamePage">
+      <div class="game-header"><button class="back" data-home>← FLOOR</button><div><p class="eyebrow" id="gameCategory">ARCADE</p><h2 id="gameTitle">Roulette</h2></div><div class="mini-balance">CHIPS <b id="gameBalance">10M</b></div></div>
+      <div id="mount"></div>
     </section>
   </main>
 </div>
 
-<div class="modal" id="devModal"><div class="modal-box"><button class="x" id="closeDev">×</button><p class="eyebrow">DEVELOPER</p><h2>Demo controls</h2><div class="dev-grid"><button data-add="100K">+100K</button><button data-add="1M">+1M</button><button data-add="10M">+10M</button><button data-add="100M">+100M</button><button id="reset">RESET 10M</button></div><small>Fictional demo credits only.</small></div></div>
+<div class="modal" id="devModal"><div class="modal-card"><button class="modal-close" id="closeDev">×</button><p class="eyebrow">DEVELOPER TOOLS</p><h2>Demo chip controls</h2><p>These only affect the local fictional balance.</p><div class="dev-grid"><button data-add="10K">+10K</button><button data-add="100K">+100K</button><button data-add="1M">+1M</button><button data-add="10M">+10M</button><button data-add="100M">+100M</button><button id="reset">RESET 10M</button></div></div></div>
+<div id="toast" class="toast"></div>
 <script src="app.js"></script>
-</body></html>
+</body>
+</html>
